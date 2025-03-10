@@ -22,16 +22,30 @@ public class Player {
     public ArrayList<Card> getHand() { return hand; }
     public ArrayList<Card> getAllCards() { return allCards; }
 
+    // Adds the specified card to the player's hand.
     public void addCard(Card c) {
         hand.add(c);
         allCards.add(c);
     }
 
+    // Clears all cards from the player's hand.
+    public void clearCards() {
+        hand.clear();
+        allCards.clear();
+    }
+
+    // Returns a String with the name of whichever
+    // hand the player has. If the player has no hand,
+    // "Nothing" is returned.
     public String playHand(ArrayList<Card> communityCards) {  
+        // Reset the "all cards" list so that it can be
+        // re-sorted with everything in the player's hand.
         allCards = new ArrayList<Card>(hand);
         allCards.addAll(communityCards);
         sortAllCards();
             
+        // If all 5 cards can be found in one suit, a Royal or Straight flush
+        // is possible.
         for (int freq : findSuitFrequency()) {
             if (freq == 5) {
                 // 5 cards, all with the same suit
@@ -59,6 +73,10 @@ public class Player {
                 }
             }
         }
+
+        // Finds how many cards of a particular rank the
+        // player has, to check for a Four of a Kind, a Full House,
+        // or a Three of a Kind.
         boolean hasFoundThreeOfARank = false;
         boolean hasFoundTwoOfARank = false;
         ArrayList<Integer> rankingFrequency = findRankingFrequency();
@@ -76,10 +94,13 @@ public class Player {
                 fullHouseTwoSet = Utility.getRankValue(Utility.getRanks()[i]);
             }
         }
+
         if (hasFoundThreeOfARank && hasFoundTwoOfARank) {
             return "Full House";
         }
 
+        // If all 5 cards can be found in the same suit, a regular
+        // Flush is possible.
         for (int freq : findSuitFrequency()) {
             if (freq == 5) {
                 highestFlushCard = Utility.getRankValue(allCards.get(allCards.size() - 1).getRank());
@@ -87,6 +108,9 @@ public class Player {
             }
         }
 
+        // Counts the number of cards with consecutive, increasing
+        // values. This can be used later to decide if the player has
+        // a Straight.
         int consecutives = 0;
         int lastCardValue = 0;
         for (Card card : allCards) {
@@ -101,6 +125,9 @@ public class Player {
             lastCardValue = Utility.getRankValue(card.getRank());
         }
 
+        // Finds the number of pairs of duplicates of cards,
+        // by ccounting the number of distinct duplicates and 
+        // performing integer division by two.
         ArrayList<Integer> alreadyValuePairs = new ArrayList<>();
         int totalPairs = 0;
         for (int i = 0; i < allCards.size(); i++) {
@@ -123,10 +150,14 @@ public class Player {
             totalPairs += duplicates / 2;
         }
 
+        // If all cards are consecutively increasing, the player
+        // has a Straight.
         if (consecutives == 4) {
             return "Straight";
         }
 
+        // If the player has exactly three cards of a rank, they
+        // have a Three of a kind.
         if (hasFoundThreeOfARank && !hasFoundTwoOfARank) {
             return "Three of a Kind";
         }
@@ -137,6 +168,8 @@ public class Player {
             return "A Pair";
         }
 
+        // Gets the highest-value card in hand (not necessarily the highest
+        // value card overall).
         int maxValueInHand = 0;
         for (Card card : hand) {
             int val = Utility.getRankValue(card.getRank());
@@ -144,10 +177,13 @@ public class Player {
                 maxValueInHand = val;
             }
         }
+        // Since the list of all cards is sorted, the highest value card
+        // overall will be the last item.
         int maxValueOverall = Utility.getRankValue(allCards.get(allCards.size() - 1).getRank());
         
         highestInHand = maxValueInHand;
 
+        // If the player's highest card is in their hand, they have a High Card
         if (maxValueInHand == maxValueOverall) {
             return "High Card";
         }
@@ -155,6 +191,7 @@ public class Player {
         return "Nothing";
     }
 
+    // Sorts the "allCards" list by order of ascending value.
     public void sortAllCards() { 
         for (int i = 0; i < allCards.size(); i++) {
             int val = Utility.getRankValue(allCards.get(i).getRank());
@@ -170,6 +207,9 @@ public class Player {
         }
     } 
 
+    // Returns the frequency of each rank in the deck, in an array
+    // with indices corresponding to the array of ranks found in the
+    // Utility class.
     public ArrayList<Integer> findRankingFrequency() {
         ArrayList<Integer> freq = new ArrayList<Integer>();
         for (String rank : Utility.getRanks()) {
@@ -184,6 +224,9 @@ public class Player {
         return freq; 
     }
 
+    // Returns the frequency of each suit in the deck, in an array
+    // with indices corresponding to the array of suits found in the
+    // Utility class.
     public ArrayList<Integer> findSuitFrequency() {
         ArrayList<Integer> freq = new ArrayList<Integer>();
         for (String suit : Utility.getSuits()) {
@@ -198,22 +241,20 @@ public class Player {
         return freq; 
     }
 
+    // The following methods are used to provide tie-breaking info
+    // for the Game class.
     public int getFullHouseThreeSet() {
         return fullHouseThreeSet;
     }
-
     public int getFullHouseTwoSet() {
         return fullHouseTwoSet;
     }
-
     public int getHighestFlushCard() {
         return highestFlushCard;
     }
-
     public int getHighestStraightCard() {
         return highestStraightCard;
     }
-
     public int getHighestInHand() {
         return highestInHand;
     }
